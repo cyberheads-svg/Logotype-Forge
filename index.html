@@ -100,6 +100,9 @@
   .copy-btn:hover{border-color:var(--accent);color:var(--accent)}
   .copy-btn.copied{border-color:#5ce1e6;color:#5ce1e6}
 
+  .white-bg-toggle{display:flex;align-items:center;gap:8px;width:100%;max-width:600px;margin-bottom:14px;font-size:10px;color:var(--muted)}
+  .white-bg-toggle input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
+
   .generate-btn{
     width:100%;max-width:600px;background:transparent;border:1px solid #3a3410;color:var(--accent);
     padding:16px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;
@@ -141,8 +144,6 @@
   <div class="taste-grid" id="tasteGrid"></div>
 </div>
 
-<!-- Format selector removed. Users can specify composition (square, poster, etc.) directly in the prompt or during editing. -->
-
 <div class="card">
   <div class="empty-state" id="emptyState">
     <div class="empty-icon">✎</div>
@@ -158,7 +159,7 @@
   </div>
 </div>
 
-<label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:10px; color:var(--muted);">
+<label class="white-bg-toggle">
   <input type="checkbox" id="whiteBgToggle"> Clean white background (optimized for editing)
 </label>
 
@@ -232,47 +233,6 @@ const TASTES = {
       "reminiscent of 1970s Stax Records and Motown album sleeve design",
       "inspired by Woodstock-era psychedelic rock poster art",
       "in the style of vintage Blue Note jazz record covers"
-    ]
-  },
-
-  minimalist_modern: {
-    label: "Minimalist", icon: "◻", era: "2010s–now",
-    typography: [
-      "ultra-clean geometric sans-serif in a single weight, generous letter spacing",
-      "thin modernist grotesque typeface, precise and restrained",
-      "monospaced technical lettering, evenly spaced, quiet confidence",
-      "custom geometric wordmark built from simple circles and straight lines",
-      "minimal condensed sans-serif, all lowercase, understated"
-    ],
-    colorPalette: [
-      "pure black text on off-white background, no additional color",
-      "single accent color — deep forest green — on a white background",
-      "monochrome grayscale with one small red detail",
-      "soft warm white background with charcoal grey type",
-      "black background with white type, high contrast and quiet"
-    ],
-    texture: [
-      "completely flat, no texture, no grain, digital-clean vector precision",
-      "subtle paper texture barely visible, matte finish",
-      "extremely subtle grain, almost imperceptible, museum print quality"
-    ],
-    layout: [
-      "logo text small and centered with vast negative space surrounding it",
-      "text aligned to the lower third, left-justified, generous margin",
-      "text perfectly centered both horizontally and vertically, single focal point",
-      "text broken across two lines with a thin horizontal rule between them"
-    ],
-    extraDetail: [
-      "no additional graphic elements, typography alone carries the composition",
-      "a single thin geometric line as the only accompanying mark",
-      "one small perfect circle placed asymmetrically as counterpoint to the text",
-      "a subtle grid of hairline guides barely visible in the background"
-    ],
-    styleRef: [
-      "in the style of contemporary Scandinavian minimalist design",
-      "reminiscent of ECM Records' understated jazz album aesthetic",
-      "inspired by Dieter Rams-influenced modernist graphic design",
-      "in the style of contemporary indie label branding (Jagjaguwar, Secretly Canadian)"
     ]
   },
 
@@ -396,40 +356,90 @@ const TASTES = {
     ]
   },
 
-  brutalist: {
-    label: "Brutalist", icon: "▪", era: "2015–now",
+  harajuku_pop: {
+    label: "Harajuku Pop", icon: "🎀", era: "1990s–now",
     typography: [
-      "raw oversized system-default sans-serif, deliberately unstyled",
-      "harsh condensed grotesque type stretched to extreme proportions",
-      "monospace terminal font, stark and utilitarian",
-      "aggressively large single-weight type filling the entire frame",
-      "brutalist blocky sans with zero rounding and extreme weight",
-      "raw system font pushed to uncomfortable proportions with heavy tracking"
+      "bubbly rounded kawaii lettering with soft candy-colored gradient fill",
+      "sticker-style puffy 3D lettering with a glossy plastic sheen and thick white outline",
+      "playful bold Japanese pop typography mixing rounded letterforms with tiny star accents",
+      "decora-style lettering layered with glitter texture and rainbow gradient",
+      "cute chunky bubble font with a thick black outline, like a Harajuku sticker shop sign",
+      "pastel gradient balloon lettering with tiny sparkle details along the strokes"
     ],
     colorPalette: [
-      "stark black and white with zero midtones",
-      "single warning-sign yellow on black",
-      "raw concrete grey and matte black",
-      "harsh red on white, ambulance-sign contrast"
+      "cotton candy pink and baby blue with white highlights, classic kawaii palette",
+      "neon rainbow gradient — pink, lavender, mint, and yellow all at once",
+      "pastel lilac and mint green with gold glitter accents",
+      "bubblegum pink and pale yellow with a holographic sheen",
+      "vivid Harajuku palette — hot pink, turquoise, and lemon yellow layered together"
     ],
     texture: [
-      "completely flat and raw, no texture, unpolished digital rawness",
-      "subtle concrete or newsprint texture, deliberately unglamorous"
+      "glossy sticker-sheet texture with a thin white die-cut style border",
+      "soft glitter texture scattered across the lettering surface",
+      "smooth vinyl-toy plastic sheen with sharp tiny highlights",
+      "subtle candy-glaze texture, glossy and slightly reflective"
     ],
     layout: [
-      "text brutally oversized, cropped at the edges of the frame",
-      "text left-aligned to the very edge, no margin, no breathing room",
-      "text stacked in a rigid grid with no visual hierarchy"
+      "text bouncing along a playful wavy baseline, each letter at a slightly different height",
+      "text centered with tiny stars, hearts, and sparkles scattered densely around it",
+      "text stacked with one word much larger than the other, energetic scale contrast",
+      "text wrapped in a sticker-style rounded badge shape with a scalloped border"
     ],
     extraDetail: [
-      "no decorative elements whatsoever, type is the entire composition",
-      "a single thick black rule dividing the composition in half",
-      "raw HTML-style bracket or underline marks around the text"
+      "tiny cartoon stars, hearts, and sparkle bursts scattered around the composition",
+      "a cluster of small kawaii charm motifs (ribbon, star, heart) beside the lettering",
+      "a soft glowing halo of pastel sparkles surrounding the text",
+      "small chibi-style cloud or candy motifs decorating the corners"
     ],
     styleRef: [
-      "in the style of contemporary web-brutalist graphic design",
-      "reminiscent of Swiss International Style pushed to an extreme",
-      "inspired by anti-design and brutalist record label branding"
+      "in the style of Harajuku decora fashion sticker branding",
+      "reminiscent of Japanese kawaii idol group logo design",
+      "inspired by 2000s purikura sticker booth aesthetic",
+      "in the style of contemporary J-pop girl group merchandise branding"
+    ]
+  },
+
+  relief_emboss: {
+    label: "Relief / Emboss", icon: "🗿", era: "Timeless / Sculptural",
+    typography: [
+      "deeply carved bas-relief lettering, as if chiseled directly into stone",
+      "raised 3D embossed letterforms catching dramatic side lighting, sculptural and tactile",
+      "letterpress-style deboss lettering pressed into thick cotton paper, subtle ink-free impression",
+      "monumental engraved lettering with sharp carved edges, like lettering cut into marble",
+      "soft clay-relief lettering with rounded sculpted edges and naturalistic shadow",
+      "metal repoussé lettering hammered into raised relief, catching warm directional light"
+    ],
+    colorPalette: [
+      "monochrome stone grey, all texture and shadow, no added color",
+      "warm bronze metallic tone throughout, uniform patina",
+      "off-white plaster tone with soft grey shadows in the recessed areas",
+      "brushed aluminum tone with soft directional highlights",
+      "deep terracotta clay tone with naturalistic earthen shading"
+    ],
+    texture: [
+      "genuine stone texture with fine natural grain, weathered at the raised edges",
+      "smooth brushed metal texture with visible directional grain",
+      "soft matte plaster texture with fine natural imperfections",
+      "raw clay surface texture, faint fingerprints and tool marks left in the material",
+      "cotton paper deboss texture, no ink, only the pressed shadow defining the letterforms"
+    ],
+    layout: [
+      "text centered on a raised rectangular plaque or tablet form",
+      "text carved directly into a rounded stone seal or medallion shape",
+      "text pressed into the center of a thick deckle-edged paper card, deboss only",
+      "text following a gentle curve as if wrapped around a cylindrical column"
+    ],
+    extraDetail: [
+      "dramatic raking light from one side casting long shadows across the relief",
+      "subtle chisel or tool marks visible at the edges of the carved letterforms",
+      "a thin carved border frame surrounding the lettering, like an ancient tablet",
+      "soft ambient occlusion in the recessed areas, physically accurate relief shading"
+    ],
+    styleRef: [
+      "in the style of classical Roman inscriptional relief carving",
+      "reminiscent of fine letterpress deboss stationery design",
+      "inspired by mid-century architectural bronze signage plaques",
+      "in the style of museum-quality sculptural typographic relief art"
     ]
   },
 

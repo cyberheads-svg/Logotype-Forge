@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0c">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logo Prompt Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+  :root{
+    --bg:#0a0a0c;--panel:#101013;--border:#1e1e24;--border2:#2e2e38;
+    --text:#d8d8de;--muted:#5a5a68;--dim:#1c1c22;
+    --accent:#f5d90a;--accent2:#ff5c8a;--accent3:#5ce1e6;
+    --mono:'IBM Plex Mono',monospace;--display:'Space Grotesk',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:#0a0a0c}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 18px 60px}
+  header{text-align:center;margin-bottom:28px;max-width:600px}
+  .eyebrow{font-size:10px;letter-spacing:.4em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,6vw,46px);color:#fff;line-height:1.05;margin-bottom:6px;letter-spacing:-.01em}
+  h1 span{color:var(--accent)}
+  .subtitle{font-size:11px;color:var(--muted);margin-top:8px;letter-spacing:.08em;line-height:1.6}
+
+  .input-group{width:100%;max-width:600px;margin-bottom:18px}
+  .input-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+  .text-input{
+    width:100%;background:var(--panel);border:1px solid var(--border2);color:#fff;
+    font-family:var(--display);font-weight:700;font-size:22px;padding:16px 18px;
+    outline:none;transition:border-color .15s;
+  }
+  .text-input:focus{border-color:var(--accent)}
+  .text-input::placeholder{color:var(--muted);font-weight:500}
+
+  .selector-group{width:100%;max-width:600px;margin-bottom:14px}
+  .selector-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .selector-label .count{color:var(--dim);font-size:9px;letter-spacing:.1em}
+  .selector{display:flex;gap:6px;width:100%;flex-wrap:wrap}
+  .selector-btn{
+    flex:1;min-width:96px;padding:9px 10px;background:transparent;border:1px solid var(--border);
+    color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+    cursor:pointer;transition:all .15s;text-align:center;
+  }
+  .selector-btn:hover{border-color:var(--border2);color:var(--text)}
+  .selector-btn.active{border-color:var(--accent);color:var(--accent);background:#1a1704}
+
+  .taste-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;width:100%}
+  .taste-btn{
+    padding:14px 10px;background:var(--panel);border:1px solid var(--border);
+    color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.04em;
+    cursor:pointer;transition:all .15s;text-align:center;line-height:1.5;
+  }
+  .taste-btn .taste-icon{display:block;font-size:18px;margin-bottom:4px}
+  .taste-btn .taste-era{display:block;font-size:8px;color:var(--dim);letter-spacing:.1em;margin-top:2px;text-transform:uppercase}
+  .taste-btn:hover{border-color:var(--border2);color:var(--text)}
+  .taste-btn.active{border-color:var(--accent);color:var(--accent);background:#1a1704}
+  .taste-btn.active .taste-era{color:var(--accent);opacity:.7}
+
+  .card{width:100%;max-width:600px;background:var(--panel);border:1px solid var(--border);padding:28px;margin-top:8px;margin-bottom:18px}
+  .empty-state{text-align:center;padding:36px 0;color:var(--dim)}
+  .empty-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+  .empty-text{font-size:12px;line-height:1.7;letter-spacing:.04em}
+
+  .fields{display:flex;flex-direction:column;gap:0;margin-bottom:24px}
+  .field-row{display:grid;grid-template-columns:98px 1fr auto;gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid var(--border)}
+  .field-row:last-child{border-bottom:none}
+  .field-row.is-locked{background:#0d0d06}
+  .field-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:3px;line-height:1.4}
+  .field-value{font-family:var(--display);font-weight:500;font-size:14px;line-height:1.45;color:#e8e8ee}
+  .btn-group{display:flex;gap:3px;align-items:center;flex-shrink:0;position:relative}
+  .reroll-btn{background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:2px 5px;line-height:1;transition:color .15s}
+  .reroll-btn:hover{color:var(--accent)}
+  .lock-btn{background:transparent;border:none;color:var(--dim);font-size:12px;cursor:pointer;padding:2px 3px;line-height:1;transition:all .15s}
+  .lock-btn:hover{color:var(--muted)}
+  .lock-btn.locked{color:var(--accent);text-shadow:0 0 6px var(--accent)}
+  .pick-btn{background:transparent;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 4px;line-height:1;transition:color .15s}
+  .pick-btn:hover{color:var(--accent3)}
+
+  .dropdown-overlay{position:fixed;inset:0;z-index:998}
+  .dropdown-list{
+    position:fixed;z-index:999;background:#0d0d10;border:1px solid var(--border2);
+    width:min(380px,92vw);max-height:min(420px,70vh);overflow-y:scroll;
+    box-shadow:0 12px 40px #000c;border-radius:2px;
+  }
+  .dropdown-item{padding:10px 14px;font-family:var(--display);font-size:12px;line-height:1.4;color:#8a8a98;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s,color .1s}
+  .dropdown-item:last-child{border-bottom:none}
+  .dropdown-item:hover{background:#151518;color:var(--accent3)}
+  .dropdown-item.is-current{color:var(--accent);background:#171505;border-left:2px solid var(--accent);padding-left:12px}
+  .dropdown-header{padding:8px 14px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);background:#08080a;border-bottom:1px solid var(--border);position:sticky;top:0}
+
+  hr.divider{border:none;border-top:1px solid var(--border);margin-bottom:18px}
+  .prompt-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .copy-hint{font-size:9px;color:var(--dim);letter-spacing:.08em;margin-bottom:8px}
+  .prompt-textarea{
+    width:100%;background:#050506;border:1px solid var(--border2);color:#9a9aa8;
+    font-family:var(--mono);font-size:11px;line-height:1.85;padding:12px;resize:vertical;
+    min-height:120px;margin-bottom:14px;word-break:break-word;cursor:pointer;outline:none;
+  }
+  .prompt-textarea:focus{border-color:var(--accent)}
+  .copy-btn{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:7px 18px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-family:var(--mono);transition:all .15s}
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .copy-btn.copied{border-color:#5ce1e6;color:#5ce1e6}
+
+  .generate-btn{
+    width:100%;max-width:600px;background:transparent;border:1px solid #3a3410;color:var(--accent);
+    padding:16px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;
+    font-family:var(--mono);transition:all .2s;margin-top:6px;margin-bottom:12px;
+  }
+  .generate-btn:hover{background:#181404;border-color:var(--accent)}
+  .generate-btn:disabled{opacity:.35;cursor:not-allowed}
+
+  .save-btn{width:100%;max-width:600px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:11px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;font-family:var(--mono);transition:all .2s;margin-bottom:36px}
+  .save-btn:hover{border-color:var(--border2);color:var(--text)}
+  .saved-section{width:100%;max-width:600px}
+  .saved-title{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+  .saved-item{background:var(--panel);border:1px solid var(--border);padding:11px 14px;margin-bottom:7px;font-size:10.5px;color:var(--muted);line-height:1.6;cursor:pointer;transition:border-color .15s;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .saved-item:hover{border-color:var(--border2);color:var(--text)}
+  .saved-item-text{flex:1;word-break:break-all}
+  .saved-item-tag{font-size:8px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;flex-shrink:0}
+  .saved-delete{background:transparent;border:none;color:#ff5c5c;font-size:12px;cursor:pointer;padding:2px 6px;flex-shrink:0;opacity:.6}
+  .saved-delete:hover{opacity:1}
+  footer{margin-top:16px;font-size:10px;color:var(--dim);letter-spacing:.12em;text-align:center}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .animate-in{animation:fadeIn .3s ease forwards}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Album Art · Band Logo · Prompt Generator</div>
+  <h1>Logo<span>type</span> Forge</h1>
+  <div class="subtitle">Prompt generator for music artwork and band logos.<br>Choose text and taste to build detailed prompts.</div>
+</header>
+
+<div class="input-group">
+  <label class="input-label">Logo Text</label>
+  <input class="text-input" id="logoText" type="text" placeholder="Enter text" maxlength="40" value="">
+</div>
+
+<div class="selector-group">
+  <div class="selector-label">Taste <span class="count" id="tasteCount"></span></div>
+  <div class="taste-grid" id="tasteGrid"></div>
+</div>
+
+<!-- Format selector removed. Users can specify composition (square, poster, etc.) directly in the prompt or during editing. -->
+
+<div class="card">
+  <div class="empty-state" id="emptyState">
+    <div class="empty-icon">✎</div>
+    <div class="empty-text">Enter text, select a taste,<br>then press GENERATE</div>
+  </div>
+  <div id="displayFields" class="fields animate-in" style="display:none"></div>
+  <div id="promptBox" style="display:none">
+    <hr class="divider">
+    <div class="prompt-label">Copy to image AI</div>
+    <div class="copy-hint">▼ Click to select all</div>
+    <textarea class="prompt-textarea" id="finalPrompt" readonly onclick="this.select()"></textarea>
+    <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copy</button>
+  </div>
+</div>
+
+<label style="display:flex; align-items:center; gap:8px; margin-bottom:10px; font-size:10px; color:var(--muted);">
+  <input type="checkbox" id="whiteBgToggle"> Clean white background (optimized for editing)
+</label>
+
+<button class="generate-btn" onclick="generateAll()">GENERATE LOGO PROMPT</button>
+<button class="save-btn" onclick="savePrompt()" id="saveBtn" style="display:none">SAVE THIS PROMPT</button>
+
+<div class="saved-section" id="savedSection" style="display:none">
+  <div class="saved-title">Saved Prompts</div>
+  <div id="savedList"></div>
+</div>
+
+<footer>Logotype Forge · album & band logo prompt generator</footer>
+
+<script>
+// ==================== STATE ====================
+let currentTaste = 'retro_vinyl';
+let generated = 0;
+let currentPrompt = "";
+let lastVals = {};
+let lockedFields = {};
+
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+// ==================== TASTE DEFINITIONS ====================
+const TASTES = {
+
+  retro_vinyl: {
+    label: "Retro Vinyl", icon: "💿", era: "1960s–70s",
+    typography: [
+      "bold rounded psychedelic lettering with flowing organic letterforms melting into each other",
+      "groovy bubble letters with thick uniform strokes, slightly warped as if hand-painted",
+      "vintage script lettering with exaggerated swashes, reminiscent of 1960s soul record labels",
+      "chunky serif display type with a slight ink-bleed look, classic Stax/Motown label lettering",
+      "hand-drawn lettering with uneven baseline, warm and imperfect, like a hand-silkscreened poster",
+      "art nouveau-influenced curling letterforms, inspired by Fillmore concert poster lettering",
+      "fat rounded display type with soft edges and slight 3D bevel, classic 70s rock poster lettering",
+      "condensed bold sans with rounded terminals, mid-century modern record sleeve style"
+    ],
+    colorPalette: [
+      "warm mustard yellow, burnt orange, and deep brown, faded like old paper",
+      "cream, avocado green, and burnt sienna, classic 1970s earth tone palette",
+      "psychedelic magenta, teal, and golden yellow with high contrast",
+      "sepia-toned cream and rust red, aged vinyl sleeve palette",
+      "deep purple, hot pink, and mustard, Woodstock-era poster colors",
+      "faded teal, cream and rust orange, classic 60s-70s record sleeve palette",
+      "sun-faded red, cream and dark brown, vintage American poster colors"
+    ],
+    texture: [
+      "visible paper grain and slight offset print misregistration, aged vinyl sleeve texture",
+      "subtle halftone dot pattern throughout, vintage screen-printing texture",
+      "soft ink bleed at letter edges, warm and slightly faded like sun-exposed cardboard",
+      "grainy risograph print texture with slight color separation",
+      "light paper texture with subtle print imperfections, warm analog feel",
+      "soft matte varnish texture with very slight emboss on the lettering"
+    ],
+    layout: [
+      "text arched in a gentle curve across the top third of the composition",
+      "text centered and stacked in two lines, filling the middle of the square frame",
+      "text wrapping around a circular sun/mandala motif, radial symmetry",
+      "text at an angle, dynamic diagonal composition typical of psychedelic posters"
+    ],
+    extraDetail: [
+      "surrounded by psychedelic swirling paisley patterns in the background",
+      "a radiating sunburst pattern behind the lettering",
+      "small vintage floral motifs bordering the composition",
+      "subtle starburst rays emanating from behind the text",
+      "a faded circular vinyl record silhouette behind the lettering"
+    ],
+    styleRef: [
+      "in the style of classic Fillmore West concert posters",
+      "reminiscent of 1970s Stax Records and Motown album sleeve design",
+      "inspired by Woodstock-era psychedelic rock poster art",
+      "in the style of vintage Blue Note jazz record covers"
+    ]
+  },
+
+  minimalist_modern: {
+    label: "Minimalist", icon: "◻", era: "2010s–now",
+    typography: [
+      "ultra-clean geometric sans-serif in a single weight, generous letter spacing",
+      "thin modernist grotesque typeface, precise and restrained",
+      "monospaced technical lettering, evenly spaced, quiet confidence",
+      "custom geometric wordmark built from simple circles and straight lines",
+      "minimal condensed sans-serif, all lowercase, understated"
+    ],
+    colorPalette: [
+      "pure black text on off-white background, no additional color",
+      "single accent color — deep forest green — on a white background",
+      "monochrome grayscale with one small red detail",
+      "soft warm white background with charcoal grey type",
+      "black background with white type, high contrast and quiet"
+    ],
+    texture: [
+      "completely flat, no texture, no grain, digital-clean vector precision",
+      "subtle paper texture barely visible, matte finish",
+      "extremely subtle grain, almost imperceptible, museum print quality"
+    ],
+    layout: [
+      "logo text small and centered with vast negative space surrounding it",
+      "text aligned to the lower third, left-justified, generous margin",
+      "text perfectly centered both horizontally and vertically, single focal point",
+      "text broken across two lines with a thin horizontal rule between them"
+    ],
+    extraDetail: [
+      "no additional graphic elements, typography alone carries the composition",
+      "a single thin geometric line as the only accompanying mark",
+      "one small perfect circle placed asymmetrically as counterpoint to the text",
+      "a subtle grid of hairline guides barely visible in the background"
+    ],
+    styleRef: [
+      "in the style of contemporary Scandinavian minimalist design",
+      "reminiscent of ECM Records' understated jazz album aesthetic",
+      "inspired by Dieter Rams-influenced modernist graphic design",
+      "in the style of contemporary indie label branding (Jagjaguwar, Secretly Canadian)"
+    ]
+  },
+
+  grunge_punk: {
+    label: "Grunge / Punk", icon: "⚡", era: "1977–1995",
+    typography: [
+      "torn and photocopied cut-paper letterforms, ransom-note style typography",
+      "hand-scrawled marker lettering, aggressive and urgent, uneven pressure",
+      "distressed stencil lettering with spray paint texture and drips",
+      "xeroxed collage typography with mismatched letter styles and sizes",
+      "hardcore show flyer lettering, thick marker strokes with intentional smudging",
+      "aggressive photocopy-distressed bold sans with heavy toner bleed",
+      "chaotic layered typography with overlapping cut-out letters"
+    ],
+    colorPalette: [
+      "high-contrast black and white with harsh photocopy degradation",
+      "black, blood red, and dirty white, classic punk flyer palette",
+      "faded black on newsprint yellow, xeroxed zine aesthetic",
+      "stark black and safety-pin silver with one splash of red"
+    ],
+    texture: [
+      "heavy photocopy degradation, toner splotches, and paper fold creases",
+      "spray paint texture with drips and overspray at the edges",
+      "duct tape and staple marks visible at the corners, DIY flyer aesthetic",
+      "scratched and scuffed surface texture, like a worn sticker on a guitar case"
+    ],
+    layout: [
+      "text crammed edge-to-edge, overlapping slightly, no breathing room",
+      "text at an aggressive tilt, crashing off one edge of the frame",
+      "text stacked unevenly, different sizes, chaotic hierarchy",
+      "text collaged from cut-out letters of different fonts and sizes"
+    ],
+    extraDetail: [
+      "safety pins, staples, and torn tape visible at the composition edges",
+      "spray-paint stencil texture bleeding through the background",
+      "scribbled anarchy symbols or DIY marks in the corners",
+      "a xeroxed band photo ghosted faintly behind the text"
+    ],
+    styleRef: [
+      "in the style of classic Crass and anarcho-punk flyer collage art",
+      "reminiscent of early Sub Pop grunge single sleeves",
+      "inspired by Jamie Reid's Sex Pistols ransom-note lettering",
+      "in the style of 1980s hardcore punk show flyers"
+    ]
+  },
+
+  psychedelic: {
+    label: "Psychedelic", icon: "🌀", era: "1967–1972",
+    typography: [
+      "letters melting and warping into liquid, barely legible optical-art lettering",
+      "op-art lettering with vibrating optical patterns filling each letterform",
+      "fluid bubble lettering with rainbow gradient fills, San Francisco poster style",
+      "letters formed from intertwined vines and organic tendrils",
+      "liquid metal lettering with chromatic reflections and distortion",
+      "psychedelic 3D extruded lettering with heavy drop shadow and glow"
+    ],
+    colorPalette: [
+      "vibrating complementary colors — hot pink against acid green",
+      "full rainbow gradient across the lettering, oversaturated 1967 palette",
+      "deep purple, orange, and turquoise in high-contrast combination",
+      "kaleidoscopic multicolor gradient with no two letters the same hue"
+    ],
+    texture: [
+      "subtle moiré pattern creating an optical vibration effect",
+      "soft airbrushed gradient blending between colors",
+      "fine halftone texture mimicking 1960s offset lithography"
+    ],
+    layout: [
+      "text following a swirling spiral path from center outward",
+      "text warped to follow a wave-like undulating baseline",
+      "text radiating outward in a kaleidoscopic circular pattern"
+    ],
+    extraDetail: [
+      "a kaleidoscopic mandala pattern filling the entire background",
+      "swirling liquid-light projection patterns surrounding the text",
+      "optical illusion spiral patterns radiating from the center"
+    ],
+    styleRef: [
+      "in the style of Victor Moscoso's psychedelic concert posters",
+      "reminiscent of Wes Wilson's Fillmore Auditorium poster lettering",
+      "inspired by 1960s San Francisco light-show album art"
+    ]
+  },
+
+  y2k_digital: {
+    label: "Y2K Digital", icon: "💾", era: "1998–2004",
+    typography: [
+      "chrome bevel 3D lettering with glossy reflective highlights, early-2000s CD aesthetic",
+      "pixelated bitmap font, low-resolution digital nostalgia",
+      "translucent bubble letters with holographic gradient fill",
+      "futuristic italic tech typeface with sharp angular cuts",
+      "glitch-distorted digital lettering with RGB channel split"
+    ],
+    colorPalette: [
+      "chrome silver and electric blue with white highlights",
+      "holographic iridescent gradient — pink to cyan to purple",
+      "millennium silver and magenta, classic Y2K aesthetic",
+      "matrix green on black digital readout palette"
+    ],
+    texture: [
+      "glossy plastic sheen with sharp specular highlights",
+      "subtle screen scanline texture across the whole surface",
+      "chromatic aberration and lens flare artifacts",
+      "digital noise and compression artifacts, low-bitrate JPEG aesthetic"
+    ],
+    layout: [
+      "text centered with a glowing drop shadow, floating in digital space",
+      "text arranged like an old Winamp skin interface element",
+      "text wrapped around a 3D sphere or torus shape"
+    ],
+    extraDetail: [
+      "small lens flare and light streak accents around the lettering",
+      "a translucent glass or chrome orb behind the text",
+      "subtle circuit-board line patterns in the background",
+      "floating holographic particles surrounding the composition"
+    ],
+    styleRef: [
+      "in the style of early 2000s CD-R burned single artwork",
+      "reminiscent of late-90s rave flyer digital design",
+      "inspired by early Winamp and MSN Messenger-era web graphics"
+    ]
+  },
+
+  brutalist: {
+    label: "Brutalist", icon: "▪", era: "2015–now",
+    typography: [
+      "raw oversized system-default sans-serif, deliberately unstyled",
+      "harsh condensed grotesque type stretched to extreme proportions",
+      "monospace terminal font, stark and utilitarian",
+      "aggressively large single-weight type filling the entire frame",
+      "brutalist blocky sans with zero rounding and extreme weight",
+      "raw system font pushed to uncomfortable proportions with heavy tracking"
+    ],
+    colorPalette: [
+      "stark black and white with zero midtones",
+      "single warning-sign yellow on black",
+      "raw concrete grey and matte black",
+      "harsh red on white, ambulance-sign contrast"
+    ],
+    texture: [
+      "completely flat and raw, no texture, unpolished digital rawness",
+      "subtle concrete or newsprint texture, deliberately unglamorous"
+    ],
+    layout: [
+      "text brutally oversized, cropped at the edges of the frame",
+      "text left-aligned to the very edge, no margin, no breathing room",
+      "text stacked in a rigid grid with no visual hierarchy"
+    ],
+    extraDetail: [
+      "no decorative elements whatsoever, type is the entire composition",
+      "a single thick black rule dividing the composition in half",
+      "raw HTML-style bracket or underline marks around the text"
+    ],
+    styleRef: [
+      "in the style of contemporary web-brutalist graphic design",
+      "reminiscent of Swiss International Style pushed to an extreme",
+      "inspired by anti-design and brutalist record label branding"
+    ]
+  },
+
+  art_deco: {
+    label: "Art Deco", icon: "🏛", era: "1920s–30s",
+    typography: [
+      "elegant geometric deco lettering with sharp angular serifs",
+      "tall condensed deco display type with stepped, ziggurat-inspired forms",
+      "gilded deco lettering with fine hairline detailing",
+      "symmetric fan-shaped deco letterforms radiating from a central point",
+      "stepped art deco lettering with strong vertical emphasis and gold bevel",
+      "sharp geometric deco with ziggurat forms and fine line ornamentation"
+    ],
+    colorPalette: [
+      "black and gold with deep emerald green accents",
+      "cream, black, and metallic gold, classic Gatsby-era palette",
+      "deep navy and champagne gold",
+      "black, silver, and burgundy"
+    ],
+    texture: [
+      "fine gold foil texture with subtle metallic sheen",
+      "smooth lacquered surface with sharp clean edges",
+      "subtle marble or lacquer texture in the background"
+    ],
+    layout: [
+      "text centered within a symmetrical geometric frame or border",
+      "text arranged in a fan or sunburst radiating pattern",
+      "text stacked with elegant horizontal rules above and below"
+    ],
+    extraDetail: [
+      "a geometric sunburst pattern framing the composition",
+      "stepped ziggurat architectural motifs bordering the text",
+      "fine gold line ornaments in the corners of the frame"
+    ],
+    styleRef: [
+      "in the style of 1920s Art Deco poster design",
+      "reminiscent of classic Gatsby-era jazz club signage",
+      "inspired by Tamara de Lempicka-adjacent deco graphic style"
+    ]
+  },
+
+  hand_lettered: {
+    label: "Hand-Lettered", icon: "✎", era: "Timeless",
+    typography: [
+      "warm hand-lettered script with natural brush-pen variation in stroke weight",
+      "casual handwritten cursive, intimate and personal, like a diary entry",
+      "hand-inked calligraphy with organic imperfect curves",
+      "loose sketchbook lettering with visible pencil guide marks left in",
+      "expressive brush script with natural pressure variation and ink bleed",
+      "delicate pointed pen calligraphy with elegant contrast and flourishes"
+    ],
+    colorPalette: [
+      "warm cream paper background with deep indigo ink",
+      "soft blush pink background with charcoal hand-lettering",
+      "natural kraft paper brown with black ink",
+      "muted sage green background with warm brown ink"
+    ],
+    texture: [
+      "visible paper tooth and grain, watercolor paper texture",
+      "soft graphite smudging around the pencil-drawn letters",
+      "subtle ink bleed into the paper fibers at stroke edges"
+    ],
+    layout: [
+      "text gently curving across the center, following a natural hand-drawn arc",
+      "text small and intimate in the corner, lots of quiet negative space",
+      "text with a small hand-drawn flourish or underline beneath it"
+    ],
+    extraDetail: [
+      "a small hand-drawn botanical sprig beside the lettering",
+      "delicate pencil sketch marks left visible at the edges",
+      "a subtle watercolor wash bleeding softly behind the text"
+    ],
+    styleRef: [
+      "in the style of intimate indie folk album hand-lettering",
+      "reminiscent of Sufjan Stevens-era hand-drawn album art",
+      "inspired by contemporary letterpress wedding invitation lettering"
+    ]
+  },
+
+  metal_extreme: {
+    label: "Metal / Extreme", icon: "🗲", era: "1985–now",
+    typography: [
+      "razor-sharp spiked black metal lettering, nearly illegible interlocking blades",
+      "gothic blackletter fraktur type with heavy ornamental serifs",
+      "jagged death metal logo lettering with dripping blood-like details",
+      "chrome-bevel thrash metal lettering with sharp aggressive angles",
+      "brutal condensed grotesque with extreme weight and spiked details",
+      "ornate blackletter with heavy metal ornamentation and spikes"
+    ],
+    colorPalette: [
+      "stark black and silver chrome, high contrast",
+      "black and blood red with sharp white highlights",
+      "monochrome black with a single sickly green accent",
+      "black and bone white, corpse-paint inspired palette"
+    ],
+    texture: [
+      "engraved metal texture with sharp specular highlights",
+      "rough woodcut-print texture, high contrast black ink",
+      "corroded rust texture bleeding through the black"
+    ],
+    layout: [
+      "text arched aggressively with spikes extending beyond the frame",
+      "text symmetrical and centered, heraldic and imposing",
+      "text interlocking so tightly individual letters are barely distinguishable"
+    ],
+    extraDetail: [
+      "gothic ornamental flourishes and thorned vines framing the text",
+      "a pentagram or heraldic crest motif behind the lettering",
+      "sharp bat-wing or blade shapes extending from the letterforms"
+    ],
+    styleRef: [
+      "in the style of classic black metal band logo design",
+      "reminiscent of Iron Maiden and NWOBHM-era metal logo lettering",
+      "inspired by death metal demo tape cover lettering"
+    ]
+  },
+
+  synthwave: {
+    label: "Synthwave", icon: "🌆", era: "1982–86 / 2010s revival",
+    typography: [
+      "neon-outlined chrome lettering with a glowing pink and cyan gradient",
+      "retro-futuristic italic type with speed-lines trailing behind each letter",
+      "80s laser-grid extruded 3D lettering with a long perspective shadow",
+      "VHS-glitch lettering with scan-line distortion and chromatic split",
+      "sharp angular synthwave lettering with heavy neon glow and chrome bevel",
+      "italicized 80s tech font with long motion blur trails"
+    ],
+    colorPalette: [
+      "hot pink and cyan neon on a deep purple gradient background",
+      "sunset gradient orange-to-magenta with black grid horizon",
+      "electric blue and magenta with a black starfield background"
+    ],
+    texture: [
+      "subtle VHS scan-line texture across the whole image",
+      "soft neon glow bloom around every edge of the lettering",
+      "fine chromatic aberration typical of 1980s analog video"
+    ],
+    layout: [
+      "text floating above a perspective grid horizon line, classic synthwave composition",
+      "text centered against a setting sun made of concentric horizontal bars",
+      "text with long dramatic drop shadow receding toward a vanishing point"
+    ],
+    extraDetail: [
+      "a glowing grid horizon extending to a vanishing point behind the text",
+      "a retro sun composed of concentric bars setting behind the lettering",
+      "palm tree silhouettes flanking the composition, Miami-vice inspired"
+    ],
+    styleRef: [
+      "in the style of contemporary synthwave album art (Kavinsky, The Midnight)",
+      "reminiscent of 1980s VHS cover art and laser-disc packaging",
+      "inspired by Drive (2011) movie poster typography"
+    ]
+  },
+
+  folk_americana: {
+    label: "Folk / Americana", icon: "🌾", era: "Timeless",
+    typography: [
+      "weathered woodblock-print lettering, rustic and hand-carved feeling",
+      "vintage western wanted-poster serif type, bold and slightly worn",
+      "letterpress-style type with visible ink impression and slight unevenness",
+      "hand-carved linocut lettering with organic rough edges",
+      "bold wood type with heavy ink impression and slight misalignment",
+      "rustic hand-carved serif with warm uneven edges and letterpress texture"
+    ],
+    colorPalette: [
+      "faded denim blue and cream, worn Americana palette",
+      "warm wheat gold and deep barn red",
+      "sun-bleached sepia and forest green",
+      "aged cream paper with deep walnut brown ink"
+    ],
+    texture: [
+      "visible wood grain texture bleeding through the print",
+      "letterpress impression texture with soft ink variation",
+      "sun-faded and weathered surface, like an old barn sign"
+    ],
+    layout: [
+      "text centered within a simple rustic banner or ribbon shape",
+      "text stacked with a thin wheat-sheaf or star motif between lines",
+      "text bordered by a simple rope or wood-grain frame"
+    ],
+    extraDetail: [
+      "a simple wheat sheaf or barn star motif beside the text",
+      "a rustic rope border framing the entire composition",
+      "small woodcut bird or mountain silhouette beneath the lettering"
+    ],
+    styleRef: [
+      "in the style of classic American folk and bluegrass record labels",
+      "reminiscent of vintage WPA-era travel poster lettering",
+      "inspired by contemporary Americana label design (Bloodshot Records)"
+    ]
+  },
+
+  contemporary_indie: {
+    label: "Indie Pop (Now)", icon: "✦", era: "2020s",
+    typography: [
+      "quirky rounded sans-serif with irregular letter widths, contemporary indie-pop feel",
+      "soft pastel bubble lettering with a slightly wobbly hand-adjusted baseline",
+      "playful condensed display type mixing upper and lowercase mid-word",
+      "custom warped variable-font lettering, trendy and slightly surreal",
+      "playful rounded display with irregular widths and hand-tuned baseline",
+      "soft contemporary indie lettering with gentle curves and pastel personality"
+    ],
+    colorPalette: [
+      "soft pastel lavender and peach with a cream background",
+      "muted sage green and dusty rose, contemporary indie palette",
+      "bright but soft coral and butter yellow",
+      "washed-out lilac and sky blue with warm white"
+    ],
+    texture: [
+      "soft grain and slight paper texture, printed zine quality",
+      "gentle risograph color-separation texture",
+      "clean matte digital finish with subtle soft shadow"
+    ],
+    layout: [
+      "text playfully arranged with one letter slightly larger or offset",
+      "text centered with a small illustrated motif tucked beside a letter",
+      "text wrapping gently around a simple round shape or blob"
+    ],
+    extraDetail: [
+      "a small hand-drawn blob or squiggle motif accompanying the text",
+      "a subtle gradient halo glowing softly behind the lettering",
+      "small scattered star or heart doodles around the composition"
+    ],
+    styleRef: [
+      "in the style of contemporary bedroom-pop album art (Clairo, beabadoobee)",
+      "reminiscent of 2020s indie label Instagram-native design",
+      "inspired by current Spotify canvas and playlist cover aesthetics"
+    ]
+  }
+
+};
+
+const FIELD_COLORS = ["#f5d90a","#ff5c8a","#5ce1e6","#a78bfa","#86efac","#fca5a5","#fdba74"];
+
+// ==================== UI: TASTE GRID ====================
+function renderTasteGrid() {
+  const grid = document.getElementById('tasteGrid');
+  grid.innerHTML = Object.entries(TASTES).map(([key, t]) => `
+    <button class="taste-btn ${key === currentTaste ? 'active' : ''}" data-taste="${key}" onclick="setTaste('${key}')">
+      <span class="taste-icon">${t.icon}</span>${t.label}
+      <span class="taste-era">${t.era}</span>
+    </button>
+  `).join('');
+  document.getElementById('tasteCount').textContent = Object.keys(TASTES).length + ' styles';
+}
+
+function setTaste(key) {
+  currentTaste = key;
+  document.querySelectorAll('.taste-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.taste === key);
+  });
+}
+
+// ==================== LOCK / REROLL ====================
+function toggleLock(key) { lockedFields[key] = !lockedFields[key]; renderFields(); }
+function isLocked(key)   { return !!lockedFields[key]; }
+
+function getPoolForField(field) {
+  const t = TASTES[currentTaste];
+  return t[field] || [];
+}
+
+function reroll(field) {
+  if (isLocked(field)) return;
+  lastVals[field] = pick(getPoolForField(field));
+  rebuildPromptAndDisplay();
+}
+
+// ==================== DROPDOWN PICKER ====================
+function openDropdown(field, buttonEl) {
+  closeDropdown();
+  const pool = getPoolForField(field);
+  if (!pool.length) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'dropdown-overlay';
+  overlay.onclick = closeDropdown;
+  document.body.appendChild(overlay);
+
+  const list = document.createElement('div');
+  list.className = 'dropdown-list';
+  list.id = 'active-dropdown';
+
+  const header = document.createElement('div');
+  header.className = 'dropdown-header';
+  header.textContent = field + ' — select to lock';
+  list.appendChild(header);
+
+  pool.forEach(value => {
+    const item = document.createElement('div');
+    item.className = 'dropdown-item' + (value === lastVals[field] ? ' is-current' : '');
+    item.textContent = value;
+    item.onclick = (e) => { e.stopPropagation(); selectFromDropdown(field, value); };
+    list.appendChild(item);
+  });
+
+  document.body.appendChild(list);
+
+  requestAnimationFrame(() => {
+    const btnRect = buttonEl.getBoundingClientRect();
+    const listH = list.offsetHeight, listW = list.offsetWidth;
+    const vw = window.innerWidth, vh = window.innerHeight, margin = 8;
+    let left = btnRect.right - listW;
+    if (left < margin) left = margin;
+    if (left + listW > vw - margin) left = vw - listW - margin;
+    let top = btnRect.bottom + 4;
+    if (top + listH > vh - margin) { top = btnRect.top - listH - 4; if (top < margin) top = margin; }
+    list.style.left = left + 'px';
+    list.style.top = top + 'px';
+    const current = list.querySelector('.is-current');
+    if (current) current.scrollIntoView({ block: 'nearest' });
+  });
+}
+
+function closeDropdown() {
+  const existing = document.getElementById('active-dropdown');
+  if (existing) existing.remove();
+  const overlay = document.querySelector('.dropdown-overlay');
+  if (overlay) overlay.remove();
+}
+
+function selectFromDropdown(field, value) {
+  lastVals[field] = value;
+  lockedFields[field] = true;
+  closeDropdown();
+  rebuildPromptAndDisplay();
+}
+
+// ==================== GENERATE ====================
+function generateAll() {
+  generated++;
+  const t = TASTES[currentTaste];
+  const fields = ['typography','colorPalette','texture','layout','extraDetail','styleRef'];
+
+  fields.forEach(f => {
+    if (!(lockedFields[f] && lastVals[f])) {
+      lastVals[f] = pick(t[f]);
+    }
+  });
+
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("displayFields").style.display = "flex";
+  document.getElementById("promptBox").style.display = "block";
+  document.getElementById("saveBtn").style.display = "block";
+
+  rebuildPromptAndDisplay();
+}
+
+// ==================== REBUILD PROMPT ====================
+function rebuildPromptAndDisplay() {
+  const v = lastVals;
+  // ユーザー入力をそのまま使う（大文字化しない）
+  const text = (document.getElementById('logoText').value || '').trim();
+  const whiteBg = document.getElementById('whiteBgToggle')?.checked;
+
+  // 単語数に応じて改行の可否を明示する
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const lineBreakRule = wordCount <= 1
+    ? "the text is a single word and must be rendered on one line only, no line break, no word wrap, no splitting the word across multiple lines"
+    : "the text may wrap onto a second line only between separate words if needed, never breaking a single word in the middle, keep each word intact on one line";
+
+  const parts = [
+    `Logo design for the text "${text}"`,
+    v.typography,
+    `layout: ${v.layout}`,
+    lineBreakRule,
+    `color palette: ${v.colorPalette}`,
+    `texture: ${v.texture}`,
+    v.extraDetail,
+    v.styleRef,
+    whiteBg ? "clean pure white background, no shadows, no texture, optimized for further editing and compositing" : null,
+    "no additional text, no watermark, ultra-detailed, high resolution, print-ready quality"
+  ];
+
+  currentPrompt = parts.filter(Boolean).join(", ");
+  document.getElementById("finalPrompt").value = currentPrompt;
+  renderFields();
+}
+
+function renderFields() {
+  const v = lastVals;
+  const container = document.getElementById("displayFields");
+
+  const fieldDefs = [
+    { key: 'typography',   label: 'Type' },
+    { key: 'layout',       label: 'Layout' },
+    { key: 'colorPalette', label: 'Colors' },
+    { key: 'texture',      label: 'Texture' },
+    { key: 'extraDetail',  label: 'Detail' },
+    { key: 'styleRef',     label: 'Ref' },
+  ];
+
+  container.innerHTML = fieldDefs.map((f, i) => {
+    const locked = isLocked(f.key);
+    const value = v[f.key] || '';
+    return `
+      <div class="field-row ${locked ? 'is-locked' : ''}">
+        <div class="field-label">${f.label}</div>
+        <div class="field-value" style="color:${FIELD_COLORS[i % FIELD_COLORS.length]}">${value}</div>
+        <div class="btn-group">
+          <button class="lock-btn ${locked ? 'locked' : ''}" onclick="toggleLock('${f.key}')" title="${locked ? 'Unlock' : 'Lock'}">${locked ? '🔒' : '🔓'}</button>
+          <button class="reroll-btn" onclick="reroll('${f.key}')" title="Re-roll">🔄</button>
+          <button class="pick-btn" onclick="openDropdown('${f.key}', this)" title="Select from list">▾</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ==================== COPY / SAVE ====================
+function copyPrompt() {
+  const ta = document.getElementById("finalPrompt");
+  if (!ta.value) return;
+  ta.select(); ta.setSelectionRange(0, 99999);
+  try { document.execCommand("copy"); } catch(e) {}
+  navigator.clipboard?.writeText(ta.value).catch(()=>{});
+  const btn = document.getElementById("copyBtn");
+  btn.textContent = "Copied ✓"; btn.classList.add("copied");
+  setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+}
+
+function savePrompt() {
+  if (!currentPrompt) return;
+  let saved = JSON.parse(localStorage.getItem("logo_prompts_v1") || "[]");
+  if (saved.some(s => s.text === currentPrompt)) return;
+  saved.unshift({ text: currentPrompt, taste: TASTES[currentTaste].label });
+  localStorage.setItem("logo_prompts_v1", JSON.stringify(saved.slice(0, 40)));
+  renderSaved();
+}
+
+function deleteSaved(index) {
+  let saved = JSON.parse(localStorage.getItem("logo_prompts_v1") || "[]");
+  saved.splice(index, 1);
+  localStorage.setItem("logo_prompts_v1", JSON.stringify(saved));
+  renderSaved();
+}
+
+function renderSaved() {
+  const saved = JSON.parse(localStorage.getItem("logo_prompts_v1") || "[]");
+  const section = document.getElementById("savedSection");
+  const list = document.getElementById("savedList");
+  if (saved.length === 0) { section.style.display = "none"; return; }
+  section.style.display = "block";
+  list.innerHTML = saved.map((s, i) => `
+    <div class="saved-item">
+      <div class="saved-item-tag">${s.taste}</div>
+      <div class="saved-item-text" data-index="${i}">${s.text}</div>
+      <button class="saved-delete" onclick="deleteSaved(${i}); event.stopPropagation();">✖</button>
+    </div>
+  `).join("");
+  document.querySelectorAll(".saved-item-text").forEach(el => {
+    el.onclick = () => {
+      const ta = document.getElementById("finalPrompt");
+      ta.value = saved[el.dataset.index].text;
+      ta.select();
+      try { document.execCommand("copy"); } catch(e) {}
+      navigator.clipboard?.writeText(saved[el.dataset.index].text).catch(()=>{});
+    };
+  });
+}
+
+renderTasteGrid();
+renderSaved();
+</script>
+
+</body>
+</html>
